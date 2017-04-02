@@ -1,0 +1,26 @@
+{
+  "name": "sigu",
+  "version": "0.0.1",
+  "description": "simple gulp file generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unscript/sigu.git"
+  },
+  "keywords": [
+    "simple",
+    "gulp",
+    "file",
+    "generator",
+    "nodejs"
+  ],
+  "author": "unscript",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/unscript/sigu/issues"
+  },
+  "homepage": "https://github.com/unscript/sigu#readme"
+}
