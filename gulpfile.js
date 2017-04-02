@@ -1,4 +1,5 @@
 const gulp = require("gulp");
+const ts = require("gulp-pug");
 
 let path = {
     src: {

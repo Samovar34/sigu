@@ -1,5 +1,6 @@
 const path = require("path"),
-        fs = require("fs");
+        fs = require("fs"),
+        Doc = require("./libs/document");
 
 const ARGV = {
     typescript: "t",
@@ -12,8 +13,7 @@ let type = process.argv[2],
     buildFolder  = process.argv[4] || "build",
     cwd = process.cwd();
 
-let result = "";
-let tab = "";
+
 
 
 if (type == "-help" || typeof type === "undefined") {
@@ -32,109 +32,69 @@ for (var i = 0; i < type.length; i++) {
     options[type[i]] = true;
 };
 
-var headerAtions = {
-    "t": function () { line('const ts = require("gulp-typescript");');},
-    "p": function () { line('const pug = require("gulp-pug");');},
-    default: () => {}
-}
-
-var pathAtions = {
-    "p": function () { line('const pug = require("gulp-pug");');},
-    default: () => {}
-}
-
-console.log(options);
-
 function generate (opt) {
-    let key = null;
-    startLine();
-    line('const gulp = require("gulp");');
-    
-    for (key in opt) {
-        if (typeof headerAtions[key] === "function") {
-            headerAtions[key]();
-        }
+    let doc = new Doc();
+
+    doc.addLine('const gulp = require("gulp");');
+
+    if (ARGV.typescript in opt) {
+        doc.addLine('const ts = require("gulp-typescript");');
     }
-    key = null;
     
-    line("");
+    if (ARGV.pug in opt) {
+        doc.addLine('const ts = require("gulp-pug");');
+    }
+    
+    doc.breakLine();
     // start path
-    line("let path = {");
+    doc.addLine("let path = {");
 
     // src: {...}
-    addTab();
-    line("src: {");
-    addTab();
-    line('view: "' + path.normalize(path.join(srcFolder, "view", "*.html")) + '",');
-    line('style: "' + path.normalize(path.join(srcFolder, "style")) + '",');
-    line('img: "' + path.normalize(path.join(srcFolder, "img", "**", "*.*")) + '",');
-    line('fonts: "' + path.normalize(path.join(srcFolder, "fonts", "*.*")) + '",');
-    line('scripts: "' + path.normalize(path.join(srcFolder, "scripts", "*.*")) + '",');
-    removeTab();
-    line("},");
+    doc.addTab();
+    doc.addLine("src: {");
+    doc.addTab();
+    doc.addLine('view: "' + path.join(srcFolder, "view", "*.html") + '",');
+    doc.addLine('style: "' + path.join(srcFolder, "style") + '",');
+    doc.addLine('img: "' + path.join(srcFolder, "img", "**", "*.*") + '",');
+    doc.addLine('fonts: "' + path.join(srcFolder, "fonts", "*.*") + '",');
+    doc.addLine('scripts: "' + path.join(srcFolder, "scripts", "*.*") + '",');
+    doc.removeTab();
+    doc.addLine("},");
 
     // watch: {...}
-    line("watch: {");
-    addTab();
-    line('view: "' + path.normalize(path.join(srcFolder, "view" ,"**", "*.*")) + '",');
-    line('style: "' + path.normalize(path.join(srcFolder, "style" ,"**", "*.scss")) + '",');
-    line('img: "' + path.normalize(path.join(srcFolder, "img" ,"**", "*.*")) + '",');
-    line('fonts: "' + path.normalize(path.join(srcFolder, "fonts" ,"**", "*.*")) + '",');
-    if (opt[ARGV.typescript]) {
-        line('scripts: "' + path.normalize(path.join(srcFolder, "scripts" ,"**", "*.ts")) + '",');
+    doc.addLine("watch: {");
+    doc.addTab();
+    doc.addLine('view: "' + path.join(srcFolder, "view" ,"**", "*.*") + '",');
+    doc.addLine('style: "' + path.join(srcFolder, "style" ,"**", "*.scss") + '",');
+    doc.addLine('img: "' + path.join(srcFolder, "img" ,"**", "*.*") + '",');
+    doc.addLine('fonts: "' + path.join(srcFolder, "fonts" ,"**", "*.*") + '",');
+    if (ARGV.typescript in opt) {
+        doc.addLine('scripts: "' + path.join(srcFolder, "scripts" ,"**", "*.ts") + '",');
     } else {
-        line('scripts: "' + path.normalize(path.join(srcFolder, "scripts" ,"**", "*.js")) + '",');
+        doc.addLine('scripts: "' + path.join(srcFolder, "scripts" ,"**", "*.js") + '",');
     }
-    removeTab();
-    line("},");
+    doc.removeTab();
+    doc.addLine("},");
 
     // build: {...}
-    line("build: {");
-    addTab();
-    line('view: "' + path.normalize(path.join(buildFolder, "./")) + '",');
-    line('style: "' + path.normalize(path.join(buildFolder, "css")) + '",');
-    line('img: "' + path.normalize(path.join(buildFolder, "img")) + '",');
-    line('fonts: "' + path.normalize(path.join(buildFolder, "fonts")) + '",');
-    line('scripts: "' + path.normalize(path.join(buildFolder, "scripts")) + '",');
-    removeTab();
-    line("}");
+    doc.addLine("build: {");
+    doc.addTab();
+    doc.addLine('view: "' + path.join(buildFolder, "./") + '",');
+    doc.addLine('style: "' + path.join(buildFolder, "css") + '",');
+    doc.addLine('img: "' + path.join(buildFolder, "img") + '",');
+    doc.addLine('fonts: "' + path.join(buildFolder, "fonts") + '",');
+    doc.addLine('scripts: "' + path.join(buildFolder, "scripts") + '",');
+    doc.removeTab();
+    doc.addLine("}");
 
     // end path
-    removeTab();
-    line("};");
+    doc.removeTab();
+    doc.addLine("};");
     
-    console.log(result);
-
-    fs.writeFile(path.join(cwd, "gulpfile.js"), result, {encoding: "utf8"}, (err) => {
+    fs.writeFile(path.join(cwd, "gulpfile.js"), doc.toString(), {encoding: "utf8"}, (err) => {
         if (err) throw err;
         console.log("Done");
-    })
-}
-
-
-function startLine() {
-    if (typeof result !== "string") {
-        result = "";
-    }
-}
-
-// добавить 1 отступ
-function addTab() {
-    tab += "    ";
-}
-
-// убрать 1 отступ
-function removeTab() {
-    if (tab.length >= 3) {
-        tab = tab.slice(0, -4);
-    } else {
-        tab = "";
-    }
-}
-
-// добавить строку
-function line(text) {
-    result += tab + text + "\n";
+    });
 }
 
 function printHelp() {
