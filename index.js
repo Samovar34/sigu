@@ -6,7 +6,9 @@ const ARGV = {
     typescript: "t",
     javascript: "j",
     pug: "p"
-}
+};
+
+const VERSION = require("./package.json").version;
 
 let type = process.argv[2],
     srcFolder  = process.argv[3] || "src",
@@ -102,7 +104,7 @@ function printHelp() {
 }
 
 function printVersion() {
-    console.log("version 0.0.1");
+    console.log("version %s", VERSION);
 }
 
 //run
