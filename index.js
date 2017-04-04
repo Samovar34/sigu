@@ -1,6 +1,15 @@
 const path = require("path"),
         fs = require("fs"),
-        Doc = require("./libs/document");
+        Doc = require("./libs/document"),
+        printer = require("./libs/printer");
+
+const VERSION = require("./package.json").version;
+
+const _ARGV = {
+    "t": true,
+    "j": true,
+    "p": true
+}
 
 const ARGV = {
     typescript: "t",
@@ -8,31 +17,44 @@ const ARGV = {
     pug: "p"
 };
 
-const VERSION = require("./package.json").version;
-
-let type = process.argv[2],
+let argv = process.argv[2],
     srcFolder  = process.argv[3] || "src",
     buildFolder  = process.argv[4] || "build",
     cwd = process.cwd();
 
+if (false) {
+    printer.printHelp();
+    return;
+}
 
+// check input
+if (typeof argv === "undefined" || argv[0] !== "-" || argv.length < 2) {
+    printer.printHelp();
+    return;
+}
 
-
-if (type == "-help" || typeof type === "undefined") {
-    printHelp();
+// sys cmd
+if (argv == "-help" || argv == "-h") {
+    printer.printHelp();
     return;
 };
 
-if (type == "-version") {
-    printVersion();
+if (argv == "-version" || argv === "-v") {
+    printer.printVersion();
     return;
 };
 
+// parse cmd arguments and check 
 var options = {};
-
-for (var i = 0; i < type.length; i++) {
-    options[type[i]] = true;
+for (var i = 1; i < argv.length; i++) {
+    if (!_ARGV[argv[i]]) {
+        printer.printError("unknown option " + argv[i] + " ");
+        return;
+    }
+    options[argv[i]] = true;
 };
+
+// check input 2
 
 function generate (opt) {
     let doc = new Doc();
@@ -59,7 +81,10 @@ function generate (opt) {
     doc.addLine('style: "' + path.join(srcFolder, "style") + '",');
     doc.addLine('img: "' + path.join(srcFolder, "img", "**", "*.*") + '",');
     doc.addLine('fonts: "' + path.join(srcFolder, "fonts", "*.*") + '",');
-    doc.addLine('scripts: "' + path.join(srcFolder, "scripts", "*.*") + '",');
+    // js or typescript
+    if (ARGV.typescript in opt || ARGV.javascript in opt) {
+        doc.addLine('scripts: "' + path.join(srcFolder, "scripts", "*.*") + '",');
+    }
     doc.removeTab();
     doc.addLine("},");
 
@@ -70,6 +95,7 @@ function generate (opt) {
     doc.addLine('style: "' + path.join(srcFolder, "style" ,"**", "*.scss") + '",');
     doc.addLine('img: "' + path.join(srcFolder, "img" ,"**", "*.*") + '",');
     doc.addLine('fonts: "' + path.join(srcFolder, "fonts" ,"**", "*.*") + '",');
+    // js or typescript
     if (ARGV.typescript in opt) {
         doc.addLine('scripts: "' + path.join(srcFolder, "scripts" ,"**", "*.ts") + '",');
     } else {
@@ -97,14 +123,6 @@ function generate (opt) {
         if (err) throw err;
         console.log("Done");
     });
-}
-
-function printHelp() {
-    console.log("HELP");
-}
-
-function printVersion() {
-    console.log("version %s", VERSION);
 }
 
 //run
