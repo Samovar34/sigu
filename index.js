@@ -40,7 +40,7 @@ if (argv == "-help" || argv == "-h") {
 };
 
 if (argv == "-version" || argv === "-v") {
-    printer.printVersion();
+    printer.printVersion(VERSION);
     return;
 };
 

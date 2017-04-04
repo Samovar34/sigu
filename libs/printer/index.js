@@ -9,8 +9,8 @@ module.exports = {
         console.log("\x1b[0m", "      p: pug");
     },
 
-    printVersion: function () {
-        console.log("\x1b[0m", "version %s", VERSION);
+    printVersion: function (version) {
+        console.log("\x1b[0m", "version " + version);
     },
 
     printError: function(msg) {
